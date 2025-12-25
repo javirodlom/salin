@@ -48,9 +48,10 @@ function App() {
       setShowSuccessMessage(true);
       setFormData({ name: '', establishment: '', email: '', phone: '' });
       setTimeout(() => setShowSuccessMessage(false), 5000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
-      alert('Hubo un error al enviar el formulario. Por favor intenta de nuevo.');
+      const errorMsg = error.message || 'Error desconocido';
+      alert(`Hubo un error al enviar el formulario (Detalle: ${errorMsg}). Por favor intenta de nuevo.`);
     } finally {
       setIsSubmitting(false);
     }
