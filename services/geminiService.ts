@@ -83,21 +83,26 @@ export const initializeChat = async () => {
     return null;
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    systemInstruction: SYSTEM_INSTRUCTION,
-    tools: tools as any
-  });
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      systemInstruction: SYSTEM_INSTRUCTION,
+      tools: tools as any
+    });
 
-  chatSession = model.startChat({
-    history: [],
-    generationConfig: {
-      maxOutputTokens: 1000,
-    },
-  });
-
-  return chatSession;
+    chatSession = model.startChat({
+      history: [],
+      generationConfig: {
+        maxOutputTokens: 1000,
+      },
+    });
+    console.log("Gemini session initialized correctly");
+    return chatSession;
+  } catch (err: any) {
+    console.error("Error initializing Gemini:", err.message);
+    return null;
+  }
 };
 
 export const sendMessageToGemini = async (message: string, onLeadSubmit?: (lead: LeadData) => void) => {
@@ -105,7 +110,7 @@ export const sendMessageToGemini = async (message: string, onLeadSubmit?: (lead:
     await initializeChat();
   }
 
-  if (!chatSession) return "Lo siento, el servicio de IA no está configurado correctamente.";
+  if (!chatSession) return "Error: No se pudo inicializar el servicio de IA. Revisa las variables de entorno.";
 
   try {
     const result = await chatSession.sendMessage(message);
@@ -135,8 +140,9 @@ export const sendMessageToGemini = async (message: string, onLeadSubmit?: (lead:
     }
 
     return response.text();
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini API Error:", error);
-    return "Lo siento, hubo un error al procesar tu mensaje. Por favor intenta de nuevo.";
+    const errorMsg = error.message || "Error desconocido";
+    return `Lo siento, hubo un error al procesar tu mensaje. (Detalle: ${errorMsg})`;
   }
 };
