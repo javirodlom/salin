@@ -11,20 +11,32 @@ async function listModels() {
         return;
     }
 
-    try {
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const data = await resp.json();
-        if (data.models) {
-            const chatModels = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent'));
-            console.log("SUPPORTED CHAT MODELS:");
-            chatModels.forEach(m => {
-                console.log(`- ${m.name}`);
+    const modelsToTest = [
+        'gemini-1.5-flash-8b',
+        'gemini-flash-latest',
+        'gemini-pro-latest',
+        'gemini-1.5-pro',
+        'gemini-1.5-pro-latest'
+    ];
+
+    for (const modelName of modelsToTest) {
+        try {
+            console.log(`Testing ${modelName}...`);
+            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: "hi" }] }] })
             });
-        } else {
-            console.log("No models found or error in API key:", data);
+            const data = await resp.json();
+            if (resp.ok) {
+                console.log(`✅ SUCCESS with ${modelName}`);
+                return modelName;
+            } else {
+                console.log(`❌ FAILED with ${modelName}: [${resp.status}] ${data.error ? data.error.message : JSON.stringify(data)}`);
+            }
+        } catch (err) {
+            console.log(`❌ ERROR testing ${modelName}: ${err.message}`);
         }
-    } catch (err) {
-        console.error("Error fetching models:", err.message);
     }
 }
 

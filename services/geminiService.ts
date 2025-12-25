@@ -86,7 +86,7 @@ export const initializeChat = async () => {
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-pro",
+      model: "gemini-flash-latest",
       systemInstruction: SYSTEM_INSTRUCTION,
       tools: tools as any
     });
